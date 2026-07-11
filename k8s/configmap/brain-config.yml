@@ -1,0 +1,82 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nexora-brain-config
+  namespace: nexora
+  labels:
+    app.kubernetes.io/name: nexora-brain
+    app.kubernetes.io/part-of: nexora-platform
+data:
+  ENVIRONMENT: "production"
+  APP_NAME: "NexoraBrain"
+  LOG_LEVEL: "info"
+  CORS_ORIGINS: "https://app.nexora.ai,https://api.nexora.ai"
+  PUBLIC_BASE_URL: "https://api.nexora.ai"
+  REDIS_URL: "redis://nexora-redis:6379/0"
+  QDRANT_URL: "http://nexora-qdrant:6333"
+  OLLAMA_URL: "http://nexora-ollama:11434"
+  OLLAMA_MODEL: "llama3"
+  OLLAMA_TIMEOUT: "180"
+  OLLAMA_MAX_RETRIES: "2"
+  JWT_ALGORITHM: "HS256"
+  ACCESS_TOKEN_EXPIRE_MINUTES: "15"
+  REFRESH_TOKEN_EXPIRE_DAYS: "7"
+  MIN_PASSWORD_LENGTH: "8"
+  PASSWORD_REQUIRE_UPPERCASE: "true"
+  PASSWORD_REQUIRE_LOWERCASE: "true"
+  PASSWORD_REQUIRE_DIGIT: "true"
+  PASSWORD_REQUIRE_SPECIAL: "true"
+  QDRANT_COLLECTION: "knowledge_base"
+  EMBEDDING_DIMENSION: "384"
+  OTEL_SERVICE_NAME: "nexora-brain"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://nexora-otel-collector:4317"
+  OTEL_METRICS_EXPORTER: "otlp"
+  OTEL_TRACES_EXPORTER: "otlp"
+  OTEL_LOGS_EXPORTER: "otlp"
+  PROMETHEUS_MULTIPROC_DIR: "/tmp"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nexora-postgres-config
+  namespace: nexora
+  labels:
+    app.kubernetes.io/name: nexora-postgres
+    app.kubernetes.io/part-of: nexora-platform
+data:
+  POSTGRES_DB: "nexora"
+  POSTGRES_USER: "nexora"
+  max_connections: "200"
+  shared_buffers: "256MB"
+  effective_cache_size: "768MB"
+  maintenance_work_mem: "64MB"
+  checkpoint_completion_target: "0.9"
+  wal_buffers: "16MB"
+  default_statistics_target: "100"
+  random_page_cost: "1.1"
+  effective_io_concurrency: "200"
+  work_mem: "2621kB"
+  min_wal_size: "1GB"
+  max_wal_size: "4GB"
+  max_worker_processes: "4"
+  max_parallel_workers_per_gather: "2"
+  max_parallel_workers: "4"
+  max_parallel_maintenance_workers: "2"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nexora-redis-config
+  namespace: nexora
+  labels:
+    app.kubernetes.io/name: nexora-redis
+    app.kubernetes.io/part-of: nexora-platform
+data:
+  redis.conf: |
+    maxmemory 400mb
+    maxmemory-policy allkeys-lru
+    save 300 10
+    save 60 10000
+    appendonly yes
+    appendfsync everysec
+    requirepass ""

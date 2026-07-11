@@ -1,0 +1,28 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: nexora-brain-pdb
+  namespace: nexora
+  labels:
+    app: nexora-brain
+    app.kubernetes.io/name: nexora-brain
+    app.kubernetes.io/part-of: nexora-platform
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: nexora-brain
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: nexora-postgres-pdb
+  namespace: nexora
+  labels:
+    app: nexora-postgres
+    app.kubernetes.io/name: nexora-postgres
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: nexora-postgres

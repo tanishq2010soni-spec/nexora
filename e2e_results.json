@@ -1,0 +1,182 @@
+[
+  {
+    "status": "PASS",
+    "detail": "SIGNUP: org=62ada1f9-9fa3-42fa-96fa-76ea4460fa5c, user=audit-orga-36298@test.com, role=admin"
+  },
+  {
+    "status": "PASS",
+    "detail": "LOGIN: user=audit-orga-36298@test.com, org=62ada1f9-9fa3-42fa-96fa-76ea4460fa5c"
+  },
+  {
+    "status": "PASS",
+    "detail": "REFRESH: new token issued"
+  },
+  {
+    "status": "PASS",
+    "detail": "WRONG PASSWORD: correctly rejected (401)"
+  },
+  {
+    "status": "PASS",
+    "detail": "SIGNUP B: tenant=e8f3fbe9-7a17-42df-8198-7c09702d3c93"
+  },
+  {
+    "status": "PASS",
+    "detail": "DASHBOARD: agents=1, leads=0, customers=0"
+  },
+  {
+    "status": "PASS",
+    "detail": "LIST AGENTS: 1 agents"
+  },
+  {
+    "status": "PASS",
+    "detail": "CREATE AGENT: id=adf64c91-561f-46e1-97db-8066901f6ab6, name=Test-Agent-36298"
+  },
+  {
+    "status": "PASS",
+    "detail": "GET AGENT: id matches"
+  },
+  {
+    "status": "PASS",
+    "detail": "UPDATE AGENT: name changed"
+  },
+  {
+    "status": "FAIL",
+    "detail": "DELETE AGENT: Expecting value: line 1 column 1 (char 0)"
+  },
+  {
+    "status": "PASS",
+    "detail": "TENANT ISOLATION AGENTS: Org B has 1 agents"
+  },
+  {
+    "status": "PASS",
+    "detail": "CREATE KB: id=e734c6f6-9aaa-49b0-8adc-8471eb61dc3d, name=Test-KB-36298"
+  },
+  {
+    "status": "PASS",
+    "detail": "LIST KB: 1 KBs"
+  },
+  {
+    "status": "PASS",
+    "detail": "GET KB: id matches, docs=0"
+  },
+  {
+    "status": "PASS",
+    "detail": "UPDATE KB: name changed"
+  },
+  {
+    "status": "FAIL",
+    "detail": "DELETE KB: Expecting value: line 1 column 1 (char 0)"
+  },
+  {
+    "status": "PASS",
+    "detail": "CREATE LEAD: id=fb8902cf-310e-4193-8878-ee807a557b9b, name=John Doe, score=1.0"
+  },
+  {
+    "status": "PASS",
+    "detail": "LIST LEADS: 1 leads"
+  },
+  {
+    "status": "PASS",
+    "detail": "COUNT LEADS: 1"
+  },
+  {
+    "status": "PASS",
+    "detail": "GET LEAD: name=John Doe, status=new"
+  },
+  {
+    "status": "PASS",
+    "detail": "UPDATE LEAD: name changed"
+  },
+  {
+    "status": "PASS",
+    "detail": "UPDATE STATUS: changed to contacted"
+  },
+  {
+    "status": "PASS",
+    "detail": "ASSIGN LEAD: to agent@test.com"
+  },
+  {
+    "status": "PASS",
+    "detail": "ADD LEAD NOTE: created"
+  },
+  {
+    "status": "PASS",
+    "detail": "LEAD ACTIVITIES: 3 logs found"
+  },
+  {
+    "status": "PASS",
+    "detail": "SEARCH LEADS: 1 results"
+  },
+  {
+    "status": "PASS",
+    "detail": "LEAD ANALYTICS: total=1, avg_score=1.0"
+  },
+  {
+    "status": "PASS",
+    "detail": "CSV EXPORT: has headers"
+  },
+  {
+    "status": "PASS",
+    "detail": "CREATE CUSTOMER: id=8c434fb3-fa48-49fd-883b-f11c9c88f992, name=Alice Smith"
+  },
+  {
+    "status": "PASS",
+    "detail": "DUPLICATE CUSTOMER: correctly rejected (409)"
+  },
+  {
+    "status": "PASS",
+    "detail": "LIST CUSTOMERS: 1 customers"
+  },
+  {
+    "status": "PASS",
+    "detail": "GET CUSTOMER: name=Alice Smith, segment=vip"
+  },
+  {
+    "status": "PASS",
+    "detail": "UPDATE CUSTOMER: name changed"
+  },
+  {
+    "status": "PASS",
+    "detail": "UPDATE SEGMENT: regular"
+  },
+  {
+    "status": "PASS",
+    "detail": "ASSIGN CUSTOMER: sales@test.com"
+  },
+  {
+    "status": "PASS",
+    "detail": "ADD CUSTOMER NOTE: created"
+  },
+  {
+    "status": "PASS",
+    "detail": "CUSTOMER ACTIVITIES: 3 logs"
+  },
+  {
+    "status": "PASS",
+    "detail": "SEARCH CUSTOMERS: 1 results"
+  },
+  {
+    "status": "PASS",
+    "detail": "CUSTOMER ANALYTICS: total=1"
+  },
+  {
+    "status": "PASS",
+    "detail": "CSV EXPORT: has headers"
+  },
+  {
+    "status": "PASS",
+    "detail": "Org B sees 0 leads (isolated from Org A)"
+  },
+  {
+    "status": "PASS",
+    "detail": "Org B sees 0 customers (isolated from Org A)"
+  },
+  {
+    "status": "FAIL",
+    "detail": "DELETE LEAD: Expecting value: line 1 column 1 (char 0)"
+  },
+  {
+    "status": "FAIL",
+    "detail": "DELETE CUSTOMER: Expecting value: line 1 column 1 (char 0)"
+  }
+]

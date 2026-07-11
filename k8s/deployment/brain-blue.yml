@@ -1,0 +1,206 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nexora-brain-blue
+  namespace: nexora
+  labels:
+    app: nexora-brain
+    color: blue
+    app.kubernetes.io/name: nexora-brain
+    app.kubernetes.io/part-of: nexora-platform
+    app.kubernetes.io/version: "1.0.0"
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: nexora-brain
+      color: blue
+  template:
+    metadata:
+      labels:
+        app: nexora-brain
+        color: blue
+        app.kubernetes.io/name: nexora-brain
+        app.kubernetes.io/part-of: nexora-platform
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/api/v1/metrics"
+        checksum/config: "$CONFIG_CHECKSUM"
+    spec:
+      imagePullSecrets:
+        - name: nexora-registry-secret
+      serviceAccountName: nexora-brain
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: brain
+          image: ghcr.io/nexora/nexora:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+              name: http
+            - containerPort: 8001
+              protocol: TCP
+              name: metrics
+          envFrom:
+            - configMapRef:
+                name: nexora-brain-config
+            - secretRef:
+                name: nexora-brain-secrets
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: nexora-brain-secrets
+                  key: DATABASE_URL
+            - name: JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: nexora-brain-secrets
+                  key: JWT_SECRET_KEY
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "2000m"
+              memory: "2Gi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 2
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 30
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep 15 && uvicorn src.main:app --host 0.0.0.0 --port 8000 &"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nexora-brain-green
+  namespace: nexora
+  labels:
+    app: nexora-brain
+    color: green
+    app.kubernetes.io/name: nexora-brain
+    app.kubernetes.io/part-of: nexora-platform
+    app.kubernetes.io/version: "1.0.0"
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: nexora-brain
+      color: green
+  template:
+    metadata:
+      labels:
+        app: nexora-brain
+        color: green
+        app.kubernetes.io/name: nexora-brain
+        app.kubernetes.io/part-of: nexora-platform
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        checksum/config: "$CONFIG_CHECKSUM"
+    spec:
+      imagePullSecrets:
+        - name: nexora-registry-secret
+      serviceAccountName: nexora-brain
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: brain
+          image: ghcr.io/nexora/nexora:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+              name: http
+          envFrom:
+            - configMapRef:
+                name: nexora-brain-config
+            - secretRef:
+                name: nexora-brain-secrets
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: nexora-brain-secrets
+                  key: DATABASE_URL
+            - name: JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: nexora-brain-secrets
+                  key: JWT_SECRET_KEY
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "2000m"
+              memory: "2Gi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 2
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 30
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep 15"]
+      volumes:
+        - name: tmp
+          emptyDir: {}

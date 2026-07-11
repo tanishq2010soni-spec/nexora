@@ -1,0 +1,21 @@
+include README.md
+include ARCHITECTURE.md
+include ROADMAP.md
+include MODULES.md
+include API_REFERENCE.md
+include PLUGIN_GUIDE.md
+include MEMORY_GUIDE.md
+include TOOL_GUIDE.md
+include TESTING_GUIDE.md
+include CONTRIBUTING.md
+include CHANGELOG.md
+include pyproject.toml
+include setup.py
+recursive-include nexora_ai *.py
+recursive-exclude nexora_ai *.pyc
+recursive-exclude nexora_ai __pycache__
+recursive-exclude nexora_ai .pyo
+prune tests
+prune docs
+prune .git
+prune .github

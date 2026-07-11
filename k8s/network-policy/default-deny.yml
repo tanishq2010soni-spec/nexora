@@ -1,0 +1,164 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: nexora
+  labels:
+    app.kubernetes.io/name: nexora
+    app.kubernetes.io/part-of: nexora-platform
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-brain-ingress
+  namespace: nexora
+  labels:
+    app.kubernetes.io/name: nexora-brain
+    app.kubernetes.io/part-of: nexora-platform
+spec:
+  podSelector:
+    matchLabels:
+      app: nexora-brain
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - port: 8000
+          protocol: TCP
+    - from:
+        - podSelector:
+            matchLabels:
+              app: nexora-brain
+      ports:
+        - port: 8000
+          protocol: TCP
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: nexora-postgres
+      ports:
+        - port: 5432
+          protocol: TCP
+    - to:
+        - podSelector:
+            matchLabels:
+              app: nexora-redis
+      ports:
+        - port: 6379
+          protocol: TCP
+    - to:
+        - podSelector:
+            matchLabels:
+              app: nexora-qdrant
+      ports:
+        - port: 6333
+          protocol: TCP
+    - to:
+        - podSelector:
+            matchLabels:
+              app: nexora-ollama
+      ports:
+        - port: 11434
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-postgres-ingress
+  namespace: nexora
+  labels:
+    app.kubernetes.io/name: nexora-postgres
+    app.kubernetes.io/part-of: nexora-platform
+spec:
+  podSelector:
+    matchLabels:
+      app: nexora-postgres
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: nexora-brain
+      ports:
+        - port: 5432
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-redis-ingress
+  namespace: nexora
+  labels:
+    app.kubernetes.io/name: nexora-redis
+    app.kubernetes.io/part-of: nexora-platform
+spec:
+  podSelector:
+    matchLabels:
+      app: nexora-redis
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: nexora-brain
+      ports:
+        - port: 6379
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-qdrant-ingress
+  namespace: nexora
+  labels:
+    app.kubernetes.io/name: nexora-qdrant
+    app.kubernetes.io/part-of: nexora-platform
+spec:
+  podSelector:
+    matchLabels:
+      app: nexora-qdrant
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: nexora-brain
+      ports:
+        - port: 6333
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ollama-ingress
+  namespace: nexora
+  labels:
+    app.kubernetes.io/name: nexora-ollama
+    app.kubernetes.io/part-of: nexora-platform
+spec:
+  podSelector:
+    matchLabels:
+      app: nexora-ollama
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: nexora-brain
+      ports:
+        - port: 11434
+          protocol: TCP

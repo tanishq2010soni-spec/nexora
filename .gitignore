@@ -1,0 +1,65 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+*.whl
+.venv/
+venv/
+env/
+
+# Environment
+.env
+.env.local
+.env.production
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+app.log
+app_err.log
+
+# pytest
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Docker secrets
+secrets/
+
+# Build artifacts
+/build/
+/control_center/build/
+/control_center/.dart_tool/
+/control_center/.pub-cache/
+
+# Flutter
+control_center/android/.gradle/
+control_center/android/app/build/
+control_center/ios/Pods/
+control_center/ios/.symlinks/
+
+# Android signing (NEVER commit)
+android/key.properties
+*.jks
+*.keystore
+
+# Coverage
+coverage/
+htmlcov/
+
+# Release builds
+/release/

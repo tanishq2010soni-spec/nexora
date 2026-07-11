@@ -1,0 +1,72 @@
+class RouteNames {
+  RouteNames._();
+
+  static const String splash = '/splash';
+  static const String login = '/login';
+  static const String register = '/register';
+  static const String dashboard = '/dashboard';
+  static const String agents = '/agents';
+  static const String whatsappAgents = '/agents/whatsapp';
+  static const String whatsappAgentDetail = '/agents/whatsapp/:id';
+  static const String whatsappAgentCreate = '/agents/whatsapp/create';
+  static const String callingAgents = '/agents/calling';
+  static const String callingAgentDetail = '/agents/calling/:id';
+  static const String callingAgentCreate = '/agents/calling/create';
+  static const String agentTemplates = '/agents/templates';
+  static const String agentAnalytics = '/agents/analytics';
+  static const String agentSettings = '/agents/settings/:id';
+  static const String knowledgeBase = '/knowledge-base';
+  static const String knowledgeBaseDetail = '/knowledge-base/:id';
+  static const String knowledgeBaseDocuments = '/knowledge-base/:id/documents';
+  static const String leads = '/leads';
+  static const String leadDetail = '/leads/:id';
+  static const String customers = '/customers';
+  static const String conversations = '/conversations';
+  static const String conversationDetail = '/conversations/:id';
+  static const String analytics = '/analytics';
+  static const String systemHealth = '/system-health';
+  static const String auditLogs = '/audit-logs';
+  static const String tasks = '/tasks';
+  static const String taskDetail = '/tasks/:id';
+  static const String team = '/team';
+  static const String billing = '/billing';
+  static const String settings = '/settings';
+  static const String notifications = '/notifications';
+  static const String workflows = '/workflows';
+  static const String workflowDetail = '/workflows/:id';
+  static const String inbox = '/inbox';
+  static const String inboxDetail = '/inbox/:id';
+  static const String calls = '/calls';
+  static const String callDetail = '/calls/:id';
+  static const String callQueues = '/calls/queues';
+  static const String analyticsCenter = '/analytics-center';
+  static const String analyticsExecutive = '/analytics-center/executive';
+  static const String analyticsLeads = '/analytics-center/leads';
+  static const String analyticsCustomers = '/analytics-center/customers';
+  static const String analyticsConversations =
+      '/analytics-center/conversations';
+  static const String analyticsCalls = '/analytics-center/calls';
+  static const String analyticsAgents = '/analytics-center/agents';
+  static const String analyticsAi = '/analytics-center/ai';
+
+  // Phase 2: Enterprise AI Platform routes
+  static const String agentManagement = '/agent-management';
+  static const String agentVersions = '/agent-management/versions';
+  static const String agentCapabilities = '/agent-management/capabilities';
+  static const String agentHealth = '/agent-management/health';
+  static const String agentLogs = '/agent-management/logs';
+  static const String agentConfiguration = '/agent-management/configuration';
+  static const String providers = '/providers';
+  static const String providerDetail = '/providers/:id';
+  static const String modelRegistry = '/models';
+  static const String modelDetail = '/models/:id';
+  static const String toolRegistry = '/tools';
+  static const String toolDetail = '/tools/:id';
+  static const String knowledgeSources = '/knowledge-sources';
+  static const String knowledgeSourceDetail = '/knowledge-sources/:id';
+  static const String workflowEngine = '/workflow-engine';
+  static const String workflowEngineDetail = '/workflow-engine/:id';
+  static const String licensing = '/licensing';
+  static const String plugins = '/plugins';
+  static const String pluginDetail = '/plugins/:id';
+}

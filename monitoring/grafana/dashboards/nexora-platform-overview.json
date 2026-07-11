@@ -1,0 +1,65 @@
+{
+  "title": "Nexora Platform Overview",
+  "uid": "nexora-platform",
+  "version": 1,
+  "schemaVersion": 38,
+  "tags": ["nexora", "platform"],
+  "timezone": "utc",
+  "panels": [
+    {
+      "title": "Service Health",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 2, "x": 0, "y": 0},
+      "targets": [
+        {"expr": "up{job=\"nexora-brain\"}", "legendFormat": "Brain"},
+        {"expr": "pg_up", "legendFormat": "PostgreSQL"},
+        {"expr": "redis_up", "legendFormat": "Redis"}
+      ]
+    },
+    {
+      "title": "Request Rate",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 6, "x": 0, "y": 4},
+      "targets": [
+        {"expr": "rate(nexora_http_requests_total[5m])", "legendFormat": "All"},
+        {"expr": "rate(nexora_http_requests_total{status_code=~\"5..\"}[5m])", "legendFormat": "5xx"}
+      ]
+    },
+    {
+      "title": "p95 Latency",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 6, "x": 6, "y": 4},
+      "targets": [
+        {"expr": "histogram_quantile(0.95, rate(nexora_http_request_duration_seconds_bucket[5m]))", "legendFormat": "p95"}
+      ]
+    },
+    {
+      "title": "CPU & Memory",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 6, "x": 12, "y": 4},
+      "targets": [
+        {"expr": "nexora_cpu_usage_percent", "legendFormat": "CPU %"},
+        {"expr": "nexora_memory_usage_bytes / nexora_memory_total_bytes * 100", "legendFormat": "Memory %"}
+      ]
+    },
+    {
+      "title": "Business Metrics",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 3, "x": 0, "y": 12},
+      "targets": [
+        {"expr": "nexora_leads_total", "legendFormat": "Leads"},
+        {"expr": "nexora_customers_total", "legendFormat": "Customers"},
+        {"expr": "nexora_active_conversations", "legendFormat": "Conversations"},
+        {"expr": "nexora_active_subscriptions", "legendFormat": "Subscriptions"}
+      ]
+    },
+    {
+      "title": "Revenue (Monthly)",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 3, "x": 3, "y": 12},
+      "targets": [
+        {"expr": "nexora_revenue_cents / 100", "legendFormat": "Revenue ($)"}
+      ]
+    }
+  ]
+}

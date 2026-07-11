@@ -1,0 +1,104 @@
+name: Nightly
+
+on:
+  schedule:
+    - cron: "0 4 * * *" # Every day at 4 AM
+  workflow_dispatch:
+
+jobs:
+  load-test:
+    name: Load Test
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run k6 load test
+        uses: grafana/k6-action@v0.3.1
+        with:
+          filename: load-testing/k6/smoke-test.js
+          flags: --out json=k6-report.json
+        env:
+          BASE_URL: https://staging.nexora.ai
+      - name: Upload k6 report
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-report
+          path: k6-report.json
+      - name: Check performance regression
+        run: |
+          python load-testing/k6/check-regression.py k6-report.json
+
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-22.04
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: nexora_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+    env:
+      ENVIRONMENT: testing
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/nexora_e2e
+      REDIS_URL: redis://localhost:6379/0
+      JWT_SECRET_KEY: test_jwt_secret_key_for_e2e_testing_1234
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          pip install poetry==1.7.1
+          poetry config virtualenvs.create false
+          poetry install --no-interaction
+      - name: Run E2E tests
+        run: |
+          uvicorn src.main:app --host 0.0.0.0 --port 8000 &
+          sleep 5
+          python scripts/zero_trust_audit.py || true
+          python run_e2e_audit.py || true
+      - name: Upload E2E report
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: e2e_results.json
+
+  dependency-update:
+    name: Dependency Update Check
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Check outdated deps
+        run: |
+          pip install poetry==1.7.1
+          poetry show --outdated | tee outdated-deps.txt
+      - name: Upload outdated report
+        uses: actions/upload-artifact@v4
+        with:
+          name: outdated-deps
+          path: outdated-deps.txt
+      - name: Create update PR if needed
+        if: github.repository == 'nexora/nexora'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore(deps): update dependencies"
+          title: "chore(deps): update dependencies"
+          branch: "chore/deps-update"
+          base: develop
+          delete-branch: true

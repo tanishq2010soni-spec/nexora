@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nexora-ollama
+  namespace: nexora
+  labels:
+    app: nexora-ollama
+    app.kubernetes.io/name: nexora-ollama
+    app.kubernetes.io/part-of: nexora-platform
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: nexora-ollama
+  template:
+    metadata:
+      labels:
+        app: nexora-ollama
+        app.kubernetes.io/name: nexora-ollama
+    spec:
+      containers:
+        - name: ollama
+          image: ollama/ollama:0.3.0
+          ports:
+            - containerPort: 11434
+              protocol: TCP
+              name: http
+          resources:
+            requests:
+              cpu: "1000m"
+              memory: "4Gi"
+            limits:
+              cpu: "4000m"
+              memory: "16Gi"
+          livenessProbe:
+            httpGet:
+              path: /api/tags
+              port: 11434
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 6
+          readinessProbe:
+            httpGet:
+              path: /api/tags
+              port: 11434
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 3
+          volumeMounts:
+            - name: ollama-data
+              mountPath: /root/.ollama
+      volumes:
+        - name: ollama-data
+          emptyDir: {}

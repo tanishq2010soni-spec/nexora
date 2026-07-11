@@ -1,0 +1,28 @@
+name: personal_ai
+description: Personal AI Assistant
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  provider: ^6.1.1
+  web_socket_channel: ^2.4.0
+  http: ^1.1.0
+  google_fonts: ^6.1.0
+  window_manager: ^0.3.7
+  go_router: ^12.1.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+  flutter_launcher_icons: ^0.13.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/

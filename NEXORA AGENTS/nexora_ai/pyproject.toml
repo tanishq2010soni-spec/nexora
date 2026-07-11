@@ -1,0 +1,119 @@
+[build-system]
+requires = ["setuptools>=69.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nexora-ai"
+version = "0.1.0"
+description = "Production-grade AI framework for building intelligent agents"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [
+    { name = "Nexora AI Team" },
+]
+
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "httpx>=0.27",
+    "aiosqlite>=0.20",
+    "pyyaml>=6.0",
+    "cryptography>=42.0",
+]
+
+[project.optional-dependencies]
+glm = []
+openai = ["openai"]
+anthropic = ["anthropic"]
+gemini = ["google-generativeai"]
+groq = ["groq"]
+mistral = ["mistralai"]
+vector = ["qdrant-client", "chromadb"]
+browser = ["playwright"]
+desktop = ["pyperclip", "aiosmtplib", "pillow", "pytesseract", "pyautogui"]
+all = [
+    "openai",
+    "anthropic",
+    "google-generativeai",
+    "groq",
+    "mistralai",
+    "qdrant-client",
+    "chromadb",
+    "playwright",
+    "pyperclip",
+    "aiosmtplib",
+    "pillow",
+    "pytesseract",
+    "pyautogui",
+]
+
+[project.urls]
+Homepage = "https://nexora.ai"
+Documentation = "https://nexora.ai/docs"
+Repository = "https://github.com/nexora/nexora-ai"
+Issues = "https://github.com/nexora/nexora-ai/issues"
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "contract: Contract tests",
+    "slow: Slow tests (deselect with '-m \"not slow\"')",
+    "network: Tests requiring network access",
+]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+disallow_any_unimported = true
+disallow_any_expr = false
+disallow_any_decorated = false
+disallow_any_explicit = true
+disallow_subclassing_any = true
+no_implicit_reexport = true
+check_untyped_defs = true
+show_error_codes = true
+ignore_missing_imports = true
+exclude = [
+    "build/",
+    "dist/",
+    ".eggs/",
+    "tests/",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "SIM", "ARG", "C4", "ISC", "PIE"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["ARG001", "ARG002"]
+"__init__.py" = ["F401"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"

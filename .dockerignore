@@ -1,0 +1,46 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+*.whl
+*.egg-info/
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+.env
+.env.*
+!.env.example
+tests/
+alembic/versions/*.pyc
+*.log
+.dockerignore
+README.md
+
+# Docker
+docker-compose*.yml
+Dockerfile
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/

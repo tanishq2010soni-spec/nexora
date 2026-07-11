@@ -1,0 +1,55 @@
+{
+  "title": "Nexora LLM / AI",
+  "uid": "nexora-llm",
+  "version": 1,
+  "schemaVersion": 38,
+  "tags": ["nexora", "llm"],
+  "timezone": "utc",
+  "panels": [
+    {
+      "title": "LLM Request Rate",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0},
+      "targets": [
+        {"expr": "rate(nexora_llm_requests_total[5m])", "legendFormat": "Requests/s"},
+        {"expr": "rate(nexora_llm_requests_total{status=\"error\"}[5m])", "legendFormat": "Errors/s"}
+      ]
+    },
+    {
+      "title": "LLM Latency (p50/p95/p99)",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0},
+      "targets": [
+        {"expr": "nexora_llm_request_duration_seconds{quantile=\"0.5\"}", "legendFormat": "p50"},
+        {"expr": "nexora_llm_request_duration_seconds{quantile=\"0.95\"}", "legendFormat": "p95"},
+        {"expr": "nexora_llm_request_duration_seconds{quantile=\"0.99\"}", "legendFormat": "p99"}
+      ]
+    },
+    {
+      "title": "Token Usage",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0},
+      "targets": [
+        {"expr": "rate(nexora_llm_tokens_total[5m])", "legendFormat": "Tokens/s"},
+        {"expr": "rate(nexora_llm_tokens_total{type=\"prompt\"}[5m])", "legendFormat": "Prompt"},
+        {"expr": "rate(nexora_llm_tokens_total{type=\"completion\"}[5m])", "legendFormat": "Completion"}
+      ]
+    },
+    {
+      "title": "Model Distribution",
+      "type": "piechart",
+      "gridPos": {"h": 8, "w": 6, "x": 0, "y": 8},
+      "targets": [
+        {"expr": "sum by (model) (nexora_llm_requests_total)", "legendFormat": "{{ model }}"}
+      ]
+    },
+    {
+      "title": "LLM Health",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 2, "x": 0, "y": 16},
+      "targets": [
+        {"expr": "nexora_ollama_health_status", "legendFormat": "Ollama"}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+title = "Nexora Gitleaks Config"
+
+[allowlist]
+description = "Allowlisted items"
+paths = [
+    ".env.example",
+    "tests/",
+    "*.md",
+]
+
+[[rules]]
+id = "nexora-jwt-secret"
+description = "Nexora JWT secret key"
+regex = '''JWT_SECRET_KEY\s*=\s*['"].+['"]'''
+secret-group = 1
+tags = ["nexora", "jwt"]
+
+[[rules]]
+id = "nexora-db-url"
+description = "Nexora database URL"
+regex = '''DATABASE_URL\s*=\s*['"].+['"]'''
+secret-group = 1
+tags = ["nexora", "database"]
+
+[[rules]]
+id = "nexora-api-key"
+description = "Nexora third-party API key"
+regex = '''(STRIPE|RAZORPAY|TWILIO|META)_SECRET_KEY\s*=\s*['"].+['"]'''
+secret-group = 1
+tags = ["nexora", "api-key"]

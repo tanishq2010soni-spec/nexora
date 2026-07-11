@@ -1,0 +1,162 @@
+groups:
+  - name: nexora-brain
+    interval: 30s
+    rules:
+      - alert: BrainDown
+        expr: up{job="nexora-brain"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Nexora Brain is down"
+          description: "Brain instance {{ $labels.instance }} has been down for more than 30s"
+
+      - alert: HighErrorRate
+        expr: rate(nexora_http_request_duration_seconds_count{status_code=~"5.."}[5m]) / rate(nexora_http_request_duration_seconds_count[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate ({{ $value | humanizePercentage }})"
+          description: "Error rate on {{ $labels.path }} is {{ $value | humanizePercentage }} above 5% threshold"
+
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, rate(nexora_http_request_duration_seconds_bucket[5m])) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High p95 latency on {{ $labels.path }}"
+          description: "p95 latency on {{ $labels.path }} is {{ $value }}s (threshold: 5s)"
+
+      - alert: HighRequestRate
+        expr: rate(nexora_http_requests_total[1m]) > 1000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High request rate"
+          description: "Request rate is {{ $value }} req/s"
+
+  - name: nexora-system
+    interval: 30s
+    rules:
+      - alert: HighCPUUsage
+        expr: nexora_cpu_usage_percent > 80
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage ({{ $value }}%)"
+          description: "CPU usage is {{ $value }}% above 80% threshold"
+
+      - alert: HighMemoryUsage
+        expr: nexora_memory_usage_bytes / nexora_memory_total_bytes > 0.85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value | humanizePercentage }} above 85%"
+
+      - alert: DiskSpaceLow
+        expr: nexora_disk_usage_bytes / nexora_disk_total_bytes > 0.90
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disk space low"
+          description: "Disk usage is {{ $value | humanizePercentage }} above 90%"
+
+  - name: nexora-database
+    interval: 30s
+    rules:
+      - alert: PostgresDown
+        expr: pg_up == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL instance is unreachable"
+
+      - alert: PostgresHighConnections
+        expr: pg_stat_activity_count > 150
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High PostgreSQL connections ({{ $value }})"
+          description: "PostgreSQL has {{ $value }} active connections (threshold: 150)"
+
+      - alert: PostgresReplicationLag
+        expr: pg_replication_lag > 10
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL replication lag"
+          description: "Replication lag is {{ $value }}s (threshold: 10s)"
+
+  - name: nexora-cache
+    interval: 30s
+    rules:
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis is down"
+          description: "Redis instance is unreachable"
+
+      - alert: RedisMemoryHigh
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis memory usage high"
+          description: "Redis memory usage is {{ $value | humanizePercentage }} above 85%"
+
+  - name: nexora-llm
+    interval: 30s
+    rules:
+      - alert: OllamaDown
+        expr: nexora_ollama_health_status == 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Ollama is down"
+          description: "Ollama instance is unreachable. LLM features degraded."
+
+      - alert: HighLLMLatency
+        expr: nexora_llm_request_duration_seconds{quantile="0.95"} > 30
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High LLM latency ({{ $value }}s)"
+          description: "p95 LLM latency is {{ $value }}s (threshold: 30s)"
+
+  - name: nexora-business
+    interval: 5m
+    rules:
+      - alert: ZeroLeadsCreated
+        expr: rate(nexora_leads_total[1h]) == 0
+        for: 6h
+        labels:
+          severity: warning
+        annotations:
+          summary: "No leads created in 6 hours"
+          description: "No leads have been created in the last 6 hours"
+
+      - alert: SubscriptionExpiring
+        expr: nexora_active_subscriptions < (nexora_active_subscriptions offset 1d) * 0.9
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Subscription count dropped"
+          description: "Active subscriptions dropped by more than 10% in 24h"

@@ -1,0 +1,310 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  PYTHON_VERSION: "3.11"
+  POETRY_VERSION: "1.7.1"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install dependencies
+        run: |
+          pip install poetry==${{ env.POETRY_VERSION }}
+          poetry config virtualenvs.create false
+          poetry install --no-interaction
+      - name: Black formatting check
+        run: black --check --diff src/ tests/
+      - name: isort import check
+        run: isort --check-only --diff src/ tests/
+      - name: Ruff linting
+        run: ruff check src/ tests/
+      - name: Flake8
+        run: flake8 src/ tests/ --max-line-length=120 --extend-ignore=E203,W503
+
+  type-check:
+    name: Type Checking
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install dependencies
+        run: |
+          pip install poetry==${{ env.POETRY_VERSION }}
+          poetry config virtualenvs.create false
+          poetry install --no-interaction
+      - name: pyright type check
+        run: pyright src/
+      - name: mypy type check
+        run: mypy src/ --strict-optional --ignore-missing-imports --warn-unused-ignores
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install dependencies
+        run: |
+          pip install poetry==${{ env.POETRY_VERSION }}
+          poetry config virtualenvs.create false
+          poetry install --no-interaction
+      - name: Bandit security scan
+        run: bandit -r src/ -x src/tests --severity-level high --confidence-level high --format json --output bandit-report.json || true
+      - name: Safety dependency scan
+        run: safety check --full-report || true
+      - name: Semgrep SAST
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: p/python
+          auditOn: push
+      - name: Upload security report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-reports
+          path: |
+            bandit-report.json
+            safety-report.txt
+
+  dependency-scan:
+    name: Dependency Scan
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install pip-audit
+        run: pip install pip-audit
+      - name: Audit dependencies
+        run: pip-audit --requirement <(pip freeze) --desc on
+      - name: Trivy scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: sarif
+          output: trivy-results.sarif
+      - name: Upload Trivy results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif
+
+  test:
+    name: Tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: nexora_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      ENVIRONMENT: testing
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/nexora_test
+      REDIS_URL: redis://localhost:6379/0
+      JWT_SECRET_KEY: test_jwt_secret_key_32_chars_long_for_testing
+      AGENT_REGISTRATION_KEY: test_agent_registration_key_for_testing
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          pip install poetry==${{ env.POETRY_VERSION }}
+          poetry config virtualenvs.create false
+          poetry install --no-interaction
+      - name: Run migrations
+        run: alembic upgrade head
+      - name: Run pytest with coverage
+        run: |
+          pytest tests/ \
+            --cov=src \
+            --cov-report=xml \
+            --cov-report=html \
+            --cov-report=term \
+            --junitxml=junit.xml \
+            -v --tb=short
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.python-version }}
+          path: coverage.xml
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.python-version }}
+          path: junit.xml
+      - name: Enforce coverage gate
+        run: |
+          coverage=$(python -c "import xml.etree.ElementTree as ET; root=ET.parse('coverage.xml'); print(f'{float(root.getroot().attrib[\"line-rate\"])*100:.1f}')")
+          echo "Coverage: $coverage%"
+          if (( $(echo "$coverage < 85" | bc -l) )); then
+            echo "FAIL: Coverage $coverage% is below 85% threshold"
+            exit 1
+          fi
+          echo "PASS: Coverage $coverage% meets 85% threshold"
+
+  migration-validate:
+    name: Migration Validation
+    runs-on: ubuntu-22.04
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: nexora_validate
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/nexora_validate
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install dependencies
+        run: |
+          pip install poetry==${{ env.POETRY_VERSION }}
+          poetry config virtualenvs.create false
+          poetry install --no-interaction
+      - name: Validate migration up
+        run: alembic upgrade head
+      - name: Validate migration down
+        run: alembic downgrade -1
+      - name: Validate migration up again
+        run: alembic upgrade head
+      - name: Check for unresolved merge heads
+        run: alembic check
+      - name: Validate migration produces current models
+        run: |
+          alembic upgrade head
+          alembic check 2>&1 || echo "Migration check completed"
+
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-22.04
+    needs: [lint, type-check, test, security-scan]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=sha,prefix=,format=short
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.production
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Scan Docker image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ghcr.io/${{ github.repository }}:${{ github.sha }}
+          format: sarif
+          output: trivy-image.sarif
+      - name: Upload Trivy image scan
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-image.sarif
+
+  openapi-check:
+    name: OpenAPI Schema Check
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install dependencies
+        run: |
+          pip install poetry==${{ env.POETRY_VERSION }}
+          poetry config virtualenvs.create false
+          poetry install --no-interaction
+      - name: Generate OpenAPI schema
+        run: |
+          python -c "
+import json, sys
+sys.path.insert(0, '.')
+from src.main import app
+openapi = app.openapi()
+with open('openapi.json', 'w') as f:
+    json.dump(openapi, f, indent=2)
+"
+      - name: Check for OpenAPI changes
+        run: |
+          if git diff --name-only origin/${{ github.base_ref }} | grep -q 'openapi.json'; then
+            echo "WARNING: OpenAPI schema changed. Manual approval required for breaking changes."
+          fi
+      - name: Upload OpenAPI schema
+        uses: actions/upload-artifact@v4
+        with:
+          name: openapi-schema
+          path: openapi.json

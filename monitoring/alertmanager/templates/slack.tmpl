@@ -1,0 +1,24 @@
+{{ define "slack.title" }}
+  [{{ .Status | toUpper }}] {{ .CommonLabels.alertname }} - {{ .CommonLabels.service | default "nexora" }}
+{{ end }}
+
+{{ define "slack.text" }}
+  {{ range .Alerts }}
+    *Alert:* {{ .Labels.alertname }}
+    *Severity:* {{ .Labels.severity }}
+    *Service:* {{ .Labels.service | default "nexora" }}
+    *Instance:* {{ .Labels.instance | default "unknown" }}
+    *Summary:* {{ .Annotations.summary }}
+    *Description:* {{ .Annotations.description }}
+    *Start:* {{ .StartsAt.Format "2006-01-02 15:04:05 UTC" }}
+    *Graph:* <{{ .GeneratorURL }}|View>
+    ---
+  {{ end }}
+{{ end }}
+
+{{ define "pd.description" }}
+  [{{ .Status | toUpper }}] {{ .CommonLabels.alertname }} - {{ .CommonLabels.service }}
+  {{ range .Alerts }}
+    {{ .Annotations.description }}
+  {{ end }}
+{{ end }}
