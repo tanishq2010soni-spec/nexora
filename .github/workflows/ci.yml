@@ -1,3 +1,4 @@
+---
 name: CI
 
 on:
@@ -291,13 +292,13 @@ jobs:
       - name: Generate OpenAPI schema
         run: |
           python -c "
-import json, sys
-sys.path.insert(0, '.')
-from src.main import app
-openapi = app.openapi()
-with open('openapi.json', 'w') as f:
-    json.dump(openapi, f, indent=2)
-"
+          import json, sys
+          sys.path.insert(0, '.')
+          from src.main import app
+          openapi = app.openapi()
+          with open('openapi.json', 'w') as f:
+              json.dump(openapi, f, indent=2)
+          "
       - name: Check for OpenAPI changes
         run: |
           if git diff --name-only origin/${{ github.base_ref }} | grep -q 'openapi.json'; then
